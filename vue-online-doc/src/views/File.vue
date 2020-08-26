@@ -104,7 +104,7 @@
               <span class="right p1">
                 <div class="rightTop" v-if="message.user.id">
                   <el-link class="userName" :underline="false">{{message.user.name}}</el-link>
-                  <span class="timeAgo" >{{dateFormat(message.discuss.discussTime)}}</span>
+                  <span class="timeAgo" >{{(dateFormat(message.discuss.discussTime))}}</span>
                 </div>
                 <div class="rightCenter">{{message.discuss.discussBody}}</div>
                 <div class="rightBottom">
@@ -148,6 +148,7 @@
   var Font = Quill.import('formats/font');
   Font.whitelist = fonts;
 
+  import date from '../utils/date'
   import file from '@/api/file'
   import CryptoJS from "crypto-js";
   import message from '@/api/message'
@@ -314,16 +315,6 @@
           this.init_authority();
         })
       },
-      dateFormat(time) {
-        var date=new Date(time);
-        var year=date.getFullYear();
-        var month= date.getMonth()+1<10 ? "0"+(date.getMonth()+1) : date.getMonth()+1;
-        var day=date.getDate()<10 ? "0"+date.getDate() : date.getDate();
-        var hours=date.getHours()<10 ? "0"+date.getHours() : date.getHours();
-        var minutes=date.getMinutes()<10 ? "0"+date.getMinutes() : date.getMinutes();
-        var seconds=date.getSeconds()<10 ? "0"+date.getSeconds() : date.getSeconds();
-        return year+"-"+month+"-"+day+" "+hours+":"+minutes+":"+seconds;
-      },
       init_authority(){
         //初始化其他用户权限设置选项  ！！bug:不能初始化团队选项
         if(this.auth.otherRead==0) this.value = ['other','N']
@@ -395,7 +386,9 @@
         // 内容改变事件
         console.log('333')
       },
-
+      dateFormat(time){
+        return date.timeago(time)
+      }
     }
   }
 </script>
