@@ -22,7 +22,7 @@
               </el-dropdown-menu>
             </el-dropdown>
           </div>
-          <img src="../../static/doc1.png" @click="goto(o.fileId)" class="image">
+          <img src="../../static/doc.png" @click="goto(o.fileId)" class="image">
           <div style="margin-top: 14px; text-align: center">
             <a>{{o.fileName}}</a>
           </div>
@@ -54,9 +54,9 @@
             </el-table-column>
             <el-table-column label="操作" width="160">
               <template slot-scope="scope">
-                <el-button v-waves size="mini" type="primary"
+                <el-button size="mini" type="primary"
                           @click="goto(scope.row.fileId)">查看</el-button>
-                <el-button v-waves size="mini" type="success"
+                <el-button size="mini" type="success"
                           @click="collectFile(scope.row.fileId)">收藏</el-button>
               </template>
             </el-table-column>
@@ -69,12 +69,9 @@
 </template>
 
 <script>
-import CryptoJS from "crypto-js"
   import file from '@/api/file'
-  import waves from "../assets/waves/waves";
   export default {
     name: "TeamFile",
-    directives:{waves},
     data(){
       return{
         FileData:[],
@@ -233,10 +230,6 @@ import CryptoJS from "crypto-js"
   .el-col :hover.image{
     transform: scale(0.95);
   }
-  /*修改el-button默认颜色*/
-  .el-button--primary,.el-button--primary:focus,.el-button--primary.is-active, .el-button--primary:active{background: #afbfc8;}
-  .el-button--success,.el-button--success:focus,.el-button--success.is-active, .el-button--success:active{background: #c3c89d;}
-  .el-button--danger,.el-button--danger:focus,.el-button--danger.is-active, .el-button--danger:active{background: #fcc4b5;}
   .input-group {display: flex;align-items: center;justify-content: flex-start;}
   .input-group label {margin: 0;flex: 1;}
 

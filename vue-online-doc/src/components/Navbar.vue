@@ -1,6 +1,12 @@
 <template>
   <div class="box-card">
-    <a href="javascript:void(0)" class="nav">金刚䂖文档</a>
+    <a class="nav">&nbsp;</a>
+    <span style="width:250px;margin-right:20px">
+      <el-input v-model="search" placeholder="请输入内容" @keyup.enter.native="click_search">
+        <el-button @click="click_search" style="width:40px" slot="append" icon="el-icon-search"></el-button>
+      </el-input>
+    </span>
+
     <!--实现全屏功能-->
     <span>
       <el-button type="primary" icon="el-icon-full-screen" size="small" @click="screen" circle></el-button>
@@ -8,14 +14,14 @@
 
     <span @click="handleCommand_notice">
       <img v-if="unreadCnt" src="../../static/bell2.png" alt slot="reference" />
-      <img v-else src="../../static/bell.png" alt slot="reference" />
+      <img v-else src="../../static/notification.png" alt slot="reference" />
     </span>
 
     <span>
       <el-dropdown @command="handleCommand_info">
         <span class="el-dropdown-link">
-          <img v-if="validAvatar()" :src="avatar" alt class="avatar" slot="reference" />
-          <img v-else src="../../static/avatar.svg" alt class="avatar" slot="reference" />
+          <img v-if="validAvatar()" :src="avatar" class="avatar" slot="reference" />
+          <img v-else src="../../static/avatar.svg" class="avatar" slot="reference" />
         </span>
         <el-dropdown-menu slot="dropdown">
           <el-dropdown-item command="goUserInfo">个人中心</el-dropdown-item>
@@ -35,7 +41,7 @@
       size="27%"
       :append-to-body="true"
       :modal="false"
-      style="margin-top:63px;"
+      style="margin-top:60px;"
     >
       <el-tabs v-model="activeName_notice" type="border-card" style="padding:5px">
         <el-tab-pane label="文档评论" name="0">
@@ -50,7 +56,7 @@
                 >
                   <div class="commentList">
                     <span style="float:left">
-                      <img class="doc" src="../../static/doc1.png" />
+                      <img class="doc" src="../../static/doc.png" />
                     </span>
                     <span>
                       <div style="margin-bottom:5px">
@@ -82,7 +88,7 @@
                 >
                   <div class="commentList">
                     <span style="float:left">
-                      <img class="doc" src="../../static/doc1.png" />
+                      <img class="doc" src="../../static/doc.png" />
                     </span>
                     <span>
                       <div style="margin-bottom:10px">
@@ -123,7 +129,7 @@
                 >
                   <div class="commentList">
                     <span style="float:left">
-                      <img class="doc" src="../../static/doc1.png" />
+                      <img class="doc" src="../../static/doc.png" />
                     </span>
                     <span>
                       <div style="margin-bottom:10px">
@@ -282,6 +288,7 @@ export default {
   name: "Navbar",
   data() {
     return {
+      search: '',
       isFullscreen: false, //全屏的状态
       name: "未登录",
       avatar: "",
@@ -334,6 +341,9 @@ export default {
     this.getMessage();
   },
   methods: {
+    click_search(){
+      alert('搜索'+this.search)
+    },
     screen() {
       //设置全屏操作
       // 如果不允许进入全屏，发出不允许提示
@@ -636,14 +646,15 @@ img {
   font-size: 14px;
 }
 .box-card {
+  z-index: 100;
+  position: relative;
   display: -webkit-flex; /* Safari */
   display: flex;
   justify-content: flex-end;
   align-items: center;
   height: 60px;
   width: 100%;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  border: 0 !important;
+  box-shadow: 0 2px 2px 0 #e6e6e6;
 }
 .box-card span {
   min-width: 45px;
@@ -657,12 +668,12 @@ img {
 }
 .nav {
   flex: 1;
+  /* float: left;
+  width: 170px; */
   margin-left: 20px;
-  font-family: PingFangSC-Semibold;
-  font-size: 20px;
-  font-weight: bold;
-  color: #0098ea;
-  text-decoration: none;
+  background-image: url(../../static/logo.png);
+  background-size: 106px;
+  background-repeat: no-repeat;
 }
 .doc {
   width: 50px;

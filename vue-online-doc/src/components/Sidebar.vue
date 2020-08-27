@@ -1,62 +1,80 @@
 <template>
-  <el-container>
-    <el-main>
-      <el-switch
-        style="margin-left:23px"
-        v-model="isCollapse"
-        active-color="#909399"
-        inactive-color="#8CC3fC"
-      ></el-switch>
-      <el-menu
-        :default-active="this.$route.path"
-        class="el-menu-vertical-demo"
-        :router="true"
-        :collapse="isCollapse"
-      >
-        <el-menu-item index="/">
-          <i class="el-icon-tickets"></i>
-          <span class="font" slot="title">工作台</span>
-        </el-menu-item>
-        <el-divider></el-divider>
-        <el-menu-item index="/Desktop">
-          <i class="el-icon-monitor"></i>
-          <span class="font" slot="title">我的桌面</span>
-        </el-menu-item>
-        <el-menu-item index="/TeamSpace">
-          <i class="el-icon-menu"></i>
-          <span class="font" slot="title">团队空间</span>
-        </el-menu-item>
-        <el-menu-item index="/Recycle">
-          <i class="el-icon-delete"></i>
-          <span class="font" slot="title">回收站</span>
-        </el-menu-item>
-        <el-divider></el-divider>
-      </el-menu>
-    </el-main>
-  </el-container>
+  <div class="sidebar">
+    <div class="user">
+      <img v-if="validAvatar()" :src="avatar"/>
+      <img v-else src="../../static/handsome.jpg"/>
+      <h3>Zero</h3>
+    </div>
+    <el-menu :default-active="this.$route.path" :router="true">
+      <el-menu-item index="/">
+        <i class="el-icon-tickets"></i>
+        <span class="font" slot="title">工作台</span>
+      </el-menu-item>
+      <el-menu-item index="/TeamSpace">
+        <i class="el-icon-menu"></i>
+        <span class="font" slot="title">团队空间</span>
+      </el-menu-item>
+      <el-menu-item index="/Recycle">
+        <i class="el-icon-delete"></i>
+        <span class="font" slot="title">回收站</span>
+      </el-menu-item>
+      <el-menu-item index="/Edit">
+        <i class="el-icon-delete"></i>
+        <span class="font" slot="title">新建</span>
+      </el-menu-item>
+      <el-menu-item index="/TemplateLibrary">
+        <i class="el-icon-delete"></i>
+        <span class="font" slot="title">模板库</span>
+      </el-menu-item>
+    </el-menu>
+  </div>
 </template>
 
 <script>
 export default {
-  name: "Sidebar",
-  data() {
-    return {
-      value2: 0,
-      isCollapse: false,
-    };
-  },
+  name: "sidebar",
+  methods: {
+    validAvatar() {
+      return false
+      // if (this.avatar == null || this.avatar == undefined) return false;
+      // return this.avatar.length > 0 ? true : false;
+    },
+  }
 };
 </script>
 
 <style scoped>
+.sidebar {
+  display: flex;
+  flex-flow: column nowrap;
+  min-width:300px;
+  height:calc(100% - 4px);
+  border:2px solid #e6e6e6;
+  background-color: #f4f4f4;
+}
+.user {
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px solid #dedede;
+  margin-bottom: 50px;
+}
+.user img {
+  margin-top: 40px;
+  height: 70px;
+  width: 70px;
+}
 .el-menu {
+  width: 100%;
+  text-align: center;
   background-color: #f4f4f4;
   border: 0;
-  /*text-align: center;*/
+}
+.el-menu-item {
+  border-bottom: 1px solid #dedede;
+  margin-left: -30px
 }
 .el-container {
   height: 100%;
-  background-color: #f4f4f4;
 }
 .item {
   color: #424e67;
@@ -66,9 +84,8 @@ export default {
   font-size: 17px;
   color: rgb(90, 90, 90);
 }
-/*菜单栏收缩(关闭时),产生收缩动画*/
-.el-menu-vertical-demo:not(.el-menu--collapse) {
-  width: 200px;
-  min-height: 400px;
+
+span {
+  text-align: center;
 }
 </style>

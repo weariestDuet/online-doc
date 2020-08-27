@@ -12,17 +12,6 @@
       <el-tooltip class="item" effect="dark" content="列表" placement="top">
         <span><i style="font-size: 25px; color: grey" class="el-icon-s-unfold"></i></span>
       </el-tooltip>
-      <el-tooltip class="item" effect="dark" content="隐藏" placement="top">
-        <span><i @click="isActive = !isActive" style="font-size: 25px; color: grey" class="el-icon-d-caret"></i></span>
-      </el-tooltip>
-
-      <collapse>
-        <div class="collapse" v-show="isActive">
-          <div style="margin-top: 40px"><el-button @click="newFile()" style="width: 170px" type="info">新建</el-button></div>
-          <div style="margin-top: 15px"><el-button  @click="gotoTLibrary()" style="width: 170px">模板库</el-button></div>
-        </div>
-      </collapse>
-
     </el-main>
 
   </el-container>
@@ -30,12 +19,10 @@
 </template>
 
 <script>
-import CryptoJS from "crypto-js"
   import UserProfile from "../components/UserProfile";
-  import collapse from "../assets/collapse.js";
   export default {
     name: "Profile",
-    components: {UserProfile,collapse},
+    components: {UserProfile},
     data(){
       return{
         isActive: true,//默认不隐藏

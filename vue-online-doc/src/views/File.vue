@@ -9,16 +9,6 @@
         <el-button @click="editing=false" v-if="writable&&editing">预览</el-button>
         <el-button @click="updateFile" v-if="writable&&editing">更新保存</el-button>
 
-        <el-button @click="dialogVisible=true">分享</el-button>
-        <el-dialog  title="分享"  :visible.sync="dialogVisible"  width="30%">
-          <el-input v-model="url" :readonly="true">
-            <el-button slot="append"
-            v-clipboard:copy="url"
-            v-clipboard:success="onCopy"
-            v-clipboard:error="onError">复制链接</el-button>
-          </el-input>
-        </el-dialog>
-
         <!-- 历史版本 -->
         <el-dialog title="历史版本"  :visible.sync="historyVisible"  width="60%"  :before-close="handleClose">
           <el-table :data="historyFileList" style="width: 100%">
@@ -89,8 +79,8 @@
           </span>
         </div>
         <div class="bottom">
-          <el-button class="p2" v-waves style="margin-right:80px" type="primary"  @click="sendMessage">发送评论</el-button>
-          <el-button class="p2" v-waves type="info" @click="cancelSendMessage()">取消评论</el-button>
+          <el-button class="p2" style="margin-right:80px" type="primary"  @click="sendMessage">发送评论</el-button>
+          <el-button class="p2" type="info" @click="cancelSendMessage()">取消评论</el-button>
         </div>
         <!-- 评论列表 -->
         <div class="message_infos">
@@ -136,8 +126,6 @@
   import 'quill/dist/quill.snow.css'
   import 'quill/dist/quill.bubble.css'
 
-  import waves from "../assets/waves/waves";
-
   //引入组件，可以直接使用这个组件
   import { quillEditor } from 'vue-quill-editor'
   import { addQuillTitle } from '../quill-title.js'
@@ -150,11 +138,9 @@
 
   import date from '../utils/date'
   import file from '@/api/file'
-  import CryptoJS from "crypto-js";
   import message from '@/api/message'
   export default {
     name: "Edit",
-    directives:{waves},
     components:{ quillEditor },
     data() {
       return {
@@ -187,7 +173,6 @@
         is_Edit:false,
         auth: {},
         content:null,
-        dialogVisible: false,
         historyVisible: false,
         historyFileVisible: false,
         editorOption:{
@@ -233,15 +218,6 @@
           this.historyFile = res.data
           console.log(res.message)
         })
-      },
-      onCopy(){
-        this.$message({
-          message: '复制成功',
-          type: 'success'
-        });
-      },
-      onError(){
-        this.$message.error('复制失败');
       },
       showHistory(){
         this.historyVisible = true
@@ -296,9 +272,7 @@
         });
       },
       loadFile(){
-        var tmp = this.$route.params.fileId
-        var bytes = CryptoJS.AES.decrypt(tmp,"123")
-        this.fileId = bytes.toString(CryptoJS.enc.Utf8)
+        this.fileId = this.$route.params.fileId
         file.getDocument(this.fileId).then(res=>{
           console.log(res.data)
           this.$store.commit('login', res.data.map)//存储token
