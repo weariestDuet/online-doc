@@ -1,41 +1,12 @@
 <template>
   <div style="height:100%; width:80%" v-if="readable" >
     <div class="header">
-
       <div style="float:right">
         <el-button type="text" v-if="is_Edit">此文档正在被编辑</el-button>
         <el-button type="text" @click="showHistory()" v-if="writable">查看历史版本</el-button>
         <el-button @click="startEdit" v-if="!is_Edit&&writable&&!editing">编辑</el-button>
         <el-button @click="editing=false" v-if="writable&&editing">预览</el-button>
         <el-button @click="updateFile" v-if="writable&&editing">更新保存</el-button>
-
-        <!-- 历史版本 -->
-        <el-dialog title="历史版本"  :visible.sync="historyVisible"  width="60%"  :before-close="handleClose">
-          <el-table :data="historyFileList" style="width: 100%">
-                <el-table-column prop="modifyCnt" label="修改次数" width="180">
-                </el-table-column>
-                <el-table-column prop="fileName" label="文件名" width="250">
-                </el-table-column>
-                <el-table-column prop="modifyTime"  label="最后修改时间" width="300">
-                </el-table-column>
-                <el-table-column label="操作" width="250">
-                  <template slot-scope="scope">
-                      <el-button size="mini" type="primary"
-                          @click="gotoHistory(scope.row.fileId,scope.row.modifyCnt)">查看</el-button>
-                  </template>
-                </el-table-column>
-           </el-table>
-        </el-dialog>
-
-        <el-dialog title="历史文档"  :visible.sync="historyFileVisible"  top="50px" width="75%"  :before-close="handleClose">
-          <div style="height:700px;width:80%;margin-left:10%">
-            <el-scrollbar style="height:100%">
-              <div class="hd" >{{this.historyFile.fileName}}</div>
-              <div class="ql-snow"><div class="ql-editor" v-html="this.historyFile.fileBody">{{this.historyFile.fileBody}}</div></div>
-            </el-scrollbar>
-          </div>
-        </el-dialog>
-
         <!-- 权限设置 -->
         <el-cascader v-if="authable&&!editing"
           style="width:120px"
@@ -44,15 +15,15 @@
           @change="handleChange">
         </el-cascader>
       </div>
-
       <el-input v-model="title" placeholder="请输入标题" v-if="writable&&editing"></el-input>
       <div class="hd" v-if="!editing">{{this.title}}</div>
-      <!-- <p style="display: none">{{fileId = this.$route.params.fileId}}</p> -->
     </div>
-    <el-divider content-position="right">䂖墨文档 </el-divider>
+
+    <el-divider content-position="right">DiaDoc </el-divider>
+    
     <div>
       <div class="ql-snow">
-          <div class="ql-editor" style="min-height:700px" v-if="!editing" v-html="this.content">{{this.content}}</div>
+          <div class="ql-editor" style="min-height:700px;" v-if="!editing" v-html="this.content">{{this.content}}</div>
         </div>
       <div>
         <quill-editor style="height:60vh;"
@@ -71,6 +42,7 @@
         <div style="margin-left:50px">[调试]当前文档权限是：{{auth}}</div>
       </div>
 
+      <!-- 评论区 -->
       <el-card v-if="discussable&&!editing" style="margin-top: 50px" show="never">
         <!-- 发评论 -->
         <div class="commentBox">

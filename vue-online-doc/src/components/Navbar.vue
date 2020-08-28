@@ -657,7 +657,7 @@ img {
   box-shadow: 0 2px 2px 0 #e6e6e6;
 }
 .box-card span {
-  min-width: 45px;
+  min-width: 55px;
 }
 .avatar {
   width: 33px;

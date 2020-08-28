@@ -1,79 +1,31 @@
 <template>
-  <el-container >
+  <div class="workStation">
     <!-- 左侧文档视图 -->
-    <el-aside style="width:75%; margin-right:50px ; ">
-      <el-tabs v-model="activeName" type="border-card" style="height:85vh" :stretch="true"  @tab-click="handleClick">
+    <div style="flex:1">   
+      <el-tabs v-model="activeName" style="height:100%"  @tab-click="handleClick" type="card">
         <el-tab-pane :label="o.groupName" :name="o.groupName" v-for="(o,id) in groups" :key="id">
-          <team-file :groupName="activeName"/>
+          <h2 style="text-indent:1.5em;user-select:none;">团队文件</h2>
+          <el-divider></el-divider>
+          <file-list :groupName="activeName" type="group" :FileData="FileData"/>
         </el-tab-pane>
       </el-tabs>
-    </el-aside>
-    <!-- 右侧信息栏 -->
-    <el-main style=" background: rgb(247, 247, 247); ">
-      <el-tooltip class="item" effect="dark" content="平铺" placement="top">
-        <span><i @click="layoutTile()" style="font-size: 25px; color: grey" class="el-icon-menu"></i></span>
-      </el-tooltip>
-      <el-tooltip class="item" effect="dark" content="列表" placement="top">
-        <span><i @click="layoutList()" style="font-size: 25px; color: grey" class="el-icon-s-unfold"></i></span>
-      </el-tooltip>
-      <el-tooltip class="item" effect="dark" content="隐藏" placement="top">
-        <span><i @click="isActive = !isActive" style="font-size: 25px; color: grey" class="el-icon-d-caret"></i></span>
-      </el-tooltip>
+    </div>
 
-      <collapse>
-        <div class="collapse" v-show="isActive">
-          <div style="margin-top: 40px"><el-button @click="teamEdit()" style="width: 170px" type="info">新建</el-button></div>
-          <div style="margin-top: 15px"><el-button  @click="gotoTLibrary()" style="width: 170px">模板库</el-button></div>
-          <div style="margin-top: 15px"><el-button @click="optionVisible = true" style="width: 170px">管理团队</el-button></div>
-          <div style="margin-top: 15px"><el-button @click="attendVisible = true" style="width: 170px">加入团队</el-button></div>
+    <div style="width:50px">
+      <el-tooltip effect="dark" content="平铺" placement="top" v-if="!$store.state.layout">
+        <div class="layout_button">
+          <i @click="layoutTile()" class="el-icon-menu"></i>
         </div>
-      </collapse>
-
-      <collapse>
-        <div class="collapse" v-show="isActive">
-          <el-card class="card">
-            <span style="font-size:18px;"><i style="margin-right:10px;font-size:22px;color:grey" class="el-icon-s-custom"></i>团队管理者</span>
-            <div style="margin-top:-10px"><el-divider></el-divider></div>
-            <div style="margin-top:-5px">
-              <span class="left">
-                <img  v-if="validAvatar(adminAvatar)" :src="adminAvatar" class="avatar" alt=""  slot="reference">
-                <img  v-else-if="groups.length>0" src="../../static/avatar.png" class="avatar" alt=""  slot="reference">
-              </span>
-              <span class="right">
-                <div class="rightTop">
-                  <span class="userName" >{{adminName}}</span>
-                </div>
-                <div class="rightCenter">{{adminMail}}</div>
-              </span>
-            </div>
-          </el-card>
+      </el-tooltip>
+      <el-tooltip effect="dark" content="列表" placement="top" v-else>
+        <div class="layout_button">
+          <i @click="layoutList()" class="el-icon-s-unfold"></i>
         </div>
-      </collapse>
-
-      <collapse>
-        <div class="collapse" v-show="isActive">
-          <el-card class="card" >
-            <span style="font-size:18px"><i style="margin-right:10px;font-size:22px;color:grey" class="el-icon-user-solid"></i>团队成员</span>
-            <div style="margin-top:-10px"><el-divider></el-divider></div>
-
-            <div style="margin-top: -15px">
-              <el-row style="display: flex; flex-wrap: wrap;" type="flex" :gutter="0" class="el-row" >
-                <el-col :span="6" class="el-col" v-for="(o, id) in group.member" :key="id" :offset="1" >
-                  <div style="text-align:center;" @click="gotoUserPage(o.name)">
-                    <img  v-if="validAvatar(o.avatar)" :src="o.avatar" class="avatar" alt=""  slot="reference" style="width:50px">
-                    <img  v-else src="../../static/avatar.png" class="avatar" alt=""  slot="reference">
-                  </div>
-                  <div style="text-align:center;margin-bottom:5px">{{o.name}}</div>
-                </el-col>
-              </el-row>
-            </div>
-          </el-card>
-        </div>
-      </collapse>
-    </el-main>
+      </el-tooltip>
+    </div>
 
     <!-- 加入/创建团队 -->
-    <el-dialog title="申请团队" :visible.sync="attendVisible" width="26%" :before-close="handleClose" :show-close="false">
+    <el-dialog title="申请团队" :visible.sync="$store.state.groupAddVisable" width="26%" :before-close="handleClose" :show-close="false">
       <div style="margin: 0px 20px 20px 20px">
         <el-input placeholder="请输入团队名" v-model="group_keyword" suffix="el-icon-search"></el-input>
         <div style="margin-top:50px">
@@ -84,7 +36,7 @@
     </el-dialog>
 
     <!-- 管理团队 -->
-    <el-dialog title="协作空间" :visible.sync="optionVisible" top="7vh" width="37%" :before-close="handleClose" :show-close="false">
+    <el-dialog title="协作空间" :visible.sync="$store.state.groupAdminVisable" top="7vh" width="37%" :before-close="handleClose" :show-close="false">
       <div style="margin: 0px 20px 20px 20px">
         <el-input placeholder="请输入协作者用户名/邮箱" v-model="user_keyword" suffix="el-icon-search"></el-input>
         <div style="margin-top: 30px; margin-bottom:30px">
@@ -141,23 +93,25 @@
         </div>
       </div>
     </el-dialog>
-
-  </el-container>
+    
+  </div>
 </template>
 
 
 
 <script>
-  import TeamFile from "../components/TeamFile"
+  import FileList from "../components/FileList"
   import MyTeam from "../components/MyTeam"
   import group from '@/api/group'
+  import file from '@/api/file'
   import Edit from '@/views/Edit'
   import collapse from "../assets/collapse.js";
   export default {
     name:"TeamSpace",
-    components: { TeamFile, MyTeam, Edit,collapse},
+    components: { FileList, MyTeam, Edit,collapse},
     data() {
       return {
+        FileData: [],
         isActive: true,//默认不隐藏
         user_keyword: '', //添加协作者用户名
         group_keyword: '', //申请加入/创建团队名
@@ -169,18 +123,11 @@
         adminMail: '',
         adminAvatar: '',
         isAdmin: false,
-        groups: [
-          // {groupId:0,groupName: '团队1'},{groupId:1,groupName: '团队2'},{groupId:2,groupName: '团队3'}
-          ],
+        groups: [],
         group:{
           id: 0,
-          admin: [
-            // {id:1, name:'马壮',mail:'1302540061@qq.com'}
-          ],
-          member: [
-            // {id: 1, name:'小明',mail:'1302540061@qq.com'},{id: 2, name:'小明',mail:'1302540061@qq.com'},
-            // {id: 3, name:'小明',mail:'1302540061@qq.com'},{id: 4, name:'小明',mail:'1302540061@qq.com'},{id: 5, name:'小明',mail:'1302540061@qq.com'}
-          ]
+          admin: [],
+          member: []
         }
       };
     },
@@ -207,6 +154,13 @@
         if(avatar == null || avatar == undefined) return false
         return avatar.length>0?true:false
       },
+      getGroupFile() {
+        file.getGroupFile(this.activeName).then(res=>{
+          this.FileData = res.data
+          console.log(res.message)
+          console.log(res.data)
+        })
+      },
       getGroupMem(groupName){
         group.getGroupMem(groupName).then(res=>{
           console.info('团队成员')
@@ -231,6 +185,7 @@
           }
           if(this.groups.length>0)
             this.getGroupMem(this.$store.state.groupName)
+            this.getGroupFile()
         })
       },
       attendGroup(){
@@ -303,21 +258,40 @@
       handleClick(tab, event) {
         console.info('切换团队成员信息')
         this.getGroupMem(this.activeName)
+        this.getGroupFile(this.activeName)
       },
       handleClose(done) {
         done();
-      },
-      gotoUserPage(name){
-        this.$router.push({path:'/Profile/'+name})
       }
     }
   };
 </script>
 <style scoped>
+@import url(../assets/tile);
   body{
     margin: 0;
     padding: 0;
   }
+.layout_button{
+  width: 50px;
+  height: 35px;
+}
+.layout_button:hover {
+  background-color: rgba(70, 70, 70, 0.1);
+}
+.layout_button  i{
+  line-height: 35px;
+  margin-left:7px;
+  font-size: 30px;
+  color: grey;
+}
+
+
+
+
+
+
+
   .fontStyle{
     font-size: 17px;
     color:rgb(90, 90, 90)

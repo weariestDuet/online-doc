@@ -7,6 +7,8 @@ export default new Vuex.Store({
   //全局状态
   state:{
     layout: 1, //是否平铺布局
+    groupAdminVisable: false,
+    groupAddVisable: false,
     groupName: '',
     roles: localStorage.getItem('roles') == null ? '' : localStorage.getItem('roles'),
     token: localStorage.getItem('token') == null ? '' : localStorage.getItem('token'),
@@ -38,6 +40,12 @@ export default new Vuex.Store({
     },
     setGroupName(state,name){
       this.state.groupName = name
+    },
+    setGroupAdminVisable(state,visable){
+      this.state.groupAdminVisable = visable
+    },
+    setGroupAddVisable(state,visable){
+      this.state.groupAddVisable = visable
     }
   },
   getters:{
@@ -46,7 +54,13 @@ export default new Vuex.Store({
     },
     getGroupName(state){
       return this.state.groupName
-    }
+    },
+    getGroupAdminVisable(state){
+      return this.state.groupAdminVisable
+    },
+    getGroupAdminVisable(state){
+      return this.state.groupAdminVisable
+    },
   },
   actions:{
     setLayoutStatus({commit,state},isTile){
@@ -54,6 +68,12 @@ export default new Vuex.Store({
     },
     setCurGroupName({commit,state},name){
       commit('setGroupName',name)
-    }
+    },
+    setGroupAdminVisable({commit,state},visable){
+      commit('setGroupAdminVisable',visable)
+    },
+    setGroupAddVisable({commit,state},visable){
+      commit('setGroupAddVisable',visable)
+    },
   }
 })

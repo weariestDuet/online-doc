@@ -21,7 +21,7 @@
   import user from '@/api/user'
   //import axios from 'axios'
   export default {
-    name: "TeamFile",
+    name: "FileList",
     data(){
       return{
         FileData:[],

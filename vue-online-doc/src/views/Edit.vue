@@ -51,11 +51,12 @@
   export default {
     name: "Edit",
     components:{ quillEditor },
+    props: {title: String, content: String},
     data() {
       return {
-        title: '',
+        // title: '',
         flag:true,
-        content:null,
+        // content:null,
         editorOption:{
             theme:'snow',
             modules:{

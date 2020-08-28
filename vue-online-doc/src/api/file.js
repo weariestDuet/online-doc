@@ -44,13 +44,13 @@ export default {
       method:'get',
     })
   },
-  getTeamFile(teamName){
+  getGroupFile(teamName){
     return request({
       url: '/doc/getTeamFile/' + teamName,
       method: 'get'
     })
   },
-  saveTeamFile(docTitle, docBody,teamName){
+  saveFileList(docTitle, docBody,teamName){
     return request({
       url: '/doc/saveTeamFile',
       method: 'post',

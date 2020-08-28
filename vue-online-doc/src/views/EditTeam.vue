@@ -94,7 +94,7 @@
         else if(this.content==null || this.content=='') 
         this.$notify({title: '提示',type: 'warning',message: '请输入文档内容',duration: 2500 })
         else{
-          file.saveTeamFile(this.title,this.content,this.$store.state.groupName)
+          file.saveFileList(this.title,this.content,this.$store.state.groupName)
           .then(res=>{
             this.$notify({title: '提示',type: 'success',message: res.message,duration: 1500 });
             this.$router.push({path:'/TeamSpace'})

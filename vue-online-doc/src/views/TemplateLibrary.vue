@@ -60,8 +60,7 @@
   width: 230px;
 }
 .core img {
-  margin: 0 auto;
-  margin-top: 15px;
+  margin: 10px auto;
   width: 200px;
   cursor:pointer;
   display: block;
