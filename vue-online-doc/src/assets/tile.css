@@ -75,7 +75,7 @@ img {
 .Recycle, .workStation {
   display:flex;
   flex: 1;
-  height: cals(100%-60px);
+  height: calc(100%-60px);
   padding: 20px;
   background-color: #fff;
 }

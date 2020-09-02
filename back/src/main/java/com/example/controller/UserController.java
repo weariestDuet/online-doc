@@ -20,11 +20,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/user")
 public class UserController {
-
-    @Autowired
-    private UserService userService;
     @Autowired
     private UserDao userDao;
+    @Autowired
+    private UserService userService;
     @Autowired
     private HttpServletRequest request;
     @Autowired
@@ -33,11 +32,6 @@ public class UserController {
     private RedisTemplate<String, String> redisTemplate;
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
-
-    @GetMapping("/hello")
-    public Result Hello(){
-        return Result.create(200, "Test success!");
-    }
 
     @PostMapping("/register")
     public Result register(String name, String password, String mail, String code){
@@ -52,7 +46,6 @@ public class UserController {
     @PostMapping("/login")
     public Result login(String name, String password){
         try {
-            System.out.println("name = " + name);
             Map map = userService.login(name,password);
             return Result.create(200, "登录成功", map);
         } catch (RuntimeException e) {
@@ -70,14 +63,13 @@ public class UserController {
             String format = formatUtil.getFileFormat(file.getOriginalFilename());
             File file1 = new File(path + user.getName() + format);
             System.out.println();
-            System.out.println(path + user.getId() + format);
+            System.out.println(path + user.getUserId() + format);
             System.out.println();
             if(!file1.getParentFile().exists()){
                 file1.getParentFile().mkdirs();
             }
             file.transferTo(file1);
-            userService.saveAvatar(user.getId(),"http://39.107.228.168/avatar/"+user.getName()+format);
-//            userService.saveAvatar(user.getId(),"http://127.0.0.1/avatar/"+user.getName()+format);
+            userDao.saveAvatar(user.getUserId(),"http://127.0.0.1/home/zero/avatar/"+user.getName()+format);
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -109,7 +101,8 @@ public class UserController {
     @GetMapping("/getUserInfo")
     public Result getUserInfo(){
         try {
-            return Result.create(200, "获取用户信息成功", userService.getUserInfo());
+            User user = userDao.getUserByName(jwtTokenUtil.getUsernameFromRequest(request));
+            return Result.create(200, "获取用户信息成功", user);
         } catch (RuntimeException e) {
             return Result.create(200, "获取用户信息失败",e.getMessage());
         }
@@ -118,16 +111,18 @@ public class UserController {
     @GetMapping("/getOtherInfo/{userName}")
     public Result getOtherInfo(@PathVariable String userName){
         try {
-            return Result.create(200, "获取用户信息成功", userService.getOtherInfo(userName));
+            User user = userDao.getUserByName(userName);
+            return Result.create(200, "获取用户信息成功", user);
         } catch (RuntimeException e) {
             return Result.create(200, "获取用户信息失败",e.getMessage());
         }
     }
 
     @PostMapping("/edituser")
-    public Result updateUser(String gender,String birth,String job,String summary){
+    public Result updateUser(String summary){
         try {
-            userService.updateUserInfo(gender,birth,job,summary);
+            User user = userDao.getUserByName(jwtTokenUtil.getUsernameFromRequest(request));
+            userDao.updateUser(user.getName(),summary);
             return Result.create(200, "更新成功");
         } catch (RuntimeException e) {
             return Result.create(200, "更新失败，" + e.getMessage());
@@ -137,7 +132,6 @@ public class UserController {
     @PostMapping("/updatePassword")
     public Result updatePassword(String oldPassword, String newPassword) {
         try {
-            userService.updateUserPassword(oldPassword, newPassword);
             return Result.create(200, "修改密码成功");
         } catch (RuntimeException e) {
             return Result.create(200, e.getMessage());
@@ -153,7 +147,6 @@ public class UserController {
             return Result.create(200, "参数错误");
         }
         try {
-            userService.updateUserMail(newMail, newMailCode);
             return Result.create(200, "改绑成功");
         } catch (RuntimeException e) {
             return Result.create(200, e.getMessage());

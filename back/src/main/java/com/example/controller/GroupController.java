@@ -1,45 +1,48 @@
 package com.example.controller;
 
-import com.example.dao.FileDao;
-import com.example.entity.Result;
-import com.example.service.FileService;
-import com.example.service.GroupService;
+import com.example.dao.DocDao;
+import com.example.dao.GroupDao;
+import com.example.dao.NoticeDao;
+import com.example.dao.UserDao;
+import com.example.entity.*;
+import com.example.utils.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 
 @CrossOrigin
 @RestController
 @RequestMapping("/team")
 public class GroupController {
     @Autowired
-    private FileService fileService;
+    UserDao userDao;
     @Autowired
-    private GroupService groupService;
+    NoticeDao noticeDao;
+    @Autowired
+    GroupDao groupDao;
+    @Autowired
+    JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private HttpServletRequest request;
 
     @PostMapping("/create/{groupName}")
     public Result createGroup(@PathVariable String groupName){
         try {
-            groupService.createGroup(groupName);
+            User user = userDao.getUserByName(jwtTokenUtil.getUsernameFromRequest(request));
+            groupDao.create(user, groupName);
             return Result.create(200, "创建成功");
         }
         catch(Exception e) {
             return Result.create(201, "创建失败," + e.getMessage());
         }
     }
-    @PostMapping("/attend/{groupName}")
-    public Result attendGroup(@PathVariable String groupName){
-        try {
-            groupService.attendGroup(groupName);
-            return Result.create(200, "申请发送成功");
-        }
-        catch(Exception e) {
-            return Result.create(201, "申请发送失败," + e.getMessage());
-        }
-    }
     @GetMapping("/getGroups")
     public Result getGroups(){
         try {
-            return Result.create(200, "获取成功",groupService.getGroups());
+            User user = userDao.getUserByName(jwtTokenUtil.getUsernameFromRequest(request));
+            return Result.create(200, "获取成功",groupDao.getUserGroup(user.getName()));
         }
         catch(Exception e) {
             return Result.create(200, "获取失败," + e.getMessage());
@@ -48,27 +51,34 @@ public class GroupController {
     @PostMapping("/addMem")
     public Result saveGroupMem(String userName,String teamName){
         try {
-            groupService.saveGroupMem(userName,teamName);
+            Group group = groupDao.getGroup(teamName);
+            Notice notice = new Notice(userName,group.getAdmin().getName(),"邀请你加入",group.getName(),new Date(),0);
+            noticeDao.saveNotice(notice);
             return Result.create(200, "邀请发送成功");
         }
         catch(Exception e) {
             return Result.create(201, "邀请发送失败," + e.getMessage());
         }
     }
-    @GetMapping("/getGroupMem/{teamName}")
-    public Result getGroupMem(@PathVariable String teamName){
+    @PostMapping("/attend/{groupName}")
+    public Result attendGroup(@PathVariable String groupName){
         try {
-            return Result.create(200, "添加成功",groupService.getGroupMem(teamName));
+            User user = userDao.getUserByName(jwtTokenUtil.getUsernameFromRequest(request));
+            Group group = groupDao.getGroup(groupName);
+            Notice notice = new Notice(group.getAdmin().getName(),user.getName(),"申请加入",group.getName(),new Date(),0);
+            noticeDao.saveNotice(notice);
+            return Result.create(200, "申请发送成功");
         }
         catch(Exception e) {
-            return Result.create(200, "添加失败," + e.getMessage());
+            return Result.create(201, "申请发送失败," + e.getMessage());
         }
     }
     @PostMapping("/removeMem")
     public Result removeMem(String teamName,String userName){
         try {
-            System.out.println("Remove: teamName = "+teamName+"userName = "+userName);
-            groupService.removeMem(teamName,userName);
+            User user = userDao.getUserByName(userName);
+            Member member = new Member(userName,user.getAvatar(),user.getMail());
+            groupDao.removeMem(teamName,member);
             return Result.create(200, "移除成员成功");
         }
         catch(Exception e) {
@@ -78,8 +88,7 @@ public class GroupController {
     @PostMapping("/deleteGroup")
     public Result deleteGroup(String teamName){
         try {
-            System.out.println("Remove: teamName = "+teamName);
-            groupService.deleteGroup(teamName);
+            groupDao.deleteTeam(teamName);
             return Result.create(200, "解散团队成功");
         }
         catch(Exception e) {

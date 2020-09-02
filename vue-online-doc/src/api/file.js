@@ -2,105 +2,49 @@ import request from '@/utils/request'
 import qs from 'qs';
 
 export default {
-  getCreation() {
-    return request({
-      url:'/doc/getCreation',
-      method:'get',
-    })
-  },
-  getDesktop(){
-    return request({
-      url: '/doc/getRelativeFile',
-      method: 'get'
-    })
-  },
-  getHistory(fileId){
-    return request({
-      url: '/doc/getHistoryFile/'+fileId,
-      method: 'get'
-    })
-  },
-  getHistoryFile(fileId,modifyCnt){
-    return request({
-      url: '/doc/getHistoryFile/'+fileId+'/'+modifyCnt,
-      method: 'get'
-    })
-  },
-  getStar() {
-    return request({
-      url:'/doc/getStar',
-      method:'get',
-    })
-  },
-  getRecent() {
-    return request({
-      url:'/doc/getRecent',
-      method:'get',
-    })
-  },
   getRecycle() {
     return request({
       url:'/doc/getRecycle',
       method:'get',
     })
   },
-  getGroupFile(teamName){
+  getGroupDoc(teamName){
     return request({
-      url: '/doc/getTeamFile/' + teamName,
+      url: '/doc/getTeamDoc/' + teamName,
       method: 'get'
     })
   },
-  saveFileList(docTitle, docBody,teamName){
+  saveTeamDoc(title, body,teamName){
     return request({
-      url: '/doc/saveTeamFile',
+      url: '/doc/saveTeamDoc',
       method: 'post',
-      data: qs.stringify({'docTitle': docTitle, 'docBody': docBody,'teamName':teamName})
+      data: qs.stringify({'title': title, 'body': body,'teamName':teamName})
     })
   },
-  sendDocument(docTitle, docBody) {
+  saveUserDoc(title, body) {
     return request({
-      url: '/doc/saveFile',
+      url: '/doc/saveDoc',
       method: 'post',
-      data: qs.stringify({'docTitle': docTitle, 'docBody': docBody})
+      data: qs.stringify({'title':title, 'body':body})
     })
   },
-  updateDocument(docId,docTitle, docBody) {
+  updateDoc(docId,title, body) {
     return request({
       url: '/doc/update',
       method: 'post',
-      data: qs.stringify({'docId': docId, 'docTitle': docTitle, 'docBody': docBody})
+      data: qs.stringify({'docId': docId, 'title': title, 'body': body})
     })
   },
-  getDocument(fileId) {
+  getDocument(docId) {
     return request({
-      url: '/doc/'+fileId,
+      url: '/doc/'+docId,
       method: 'get'
     })
   },
-
-  // 回收站相关
-  Deleted(fileId) {  
+  deleteDoc(docId){
     return request({
-      url: '/doc/delete/' + fileId,
-      method: 'delete',
-    })
-  },
-  getDeleted() {
-    return request({
-      url: '/doc/getDelete',
-      method: 'get'
-    })
-  },
-  recoverDeleted(fileId){
-    return request({
-      url: '/doc/recoverDelete/' + fileId,
-      method: 'post'
-    })
-  },
-  foreverDeleted(fileId){
-    return request({
-      url: '/doc/foreverDelete/' + fileId,
-      method: 'post'
+      url: '/doc/delete/' + docId,
+      method: 'delete'
     })
   },
 
@@ -125,22 +69,16 @@ export default {
       // data: {auth:auth}
     })
   },
-  collectDocument(docId){
+  collectDoc(docId){
     return request({
       url: '/doc/collect/' + docId,
       method: 'post'
     })
   },
-  removeCollectedDocument(docId){
+  uncollectDoc(docId){
     return request({
-      url: '/doc/removeCollectedDoc/' + docId,
+      url: '/doc/unCollect/' + docId,
       method: 'delete'
-    })
-  },
-  getMyCollecting(){
-    return request({
-      url: '/doc/getCollect',
-      method: 'get'
     })
   },
 }

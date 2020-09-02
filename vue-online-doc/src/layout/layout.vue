@@ -11,6 +11,7 @@
 <script>
 import navbar from "@/components/Navbar"; 
 import sidebar from "@/components/Sidebar";
+import user from '@/api/user'
 export default {
   name: "Layout",
   components: { navbar,sidebar }

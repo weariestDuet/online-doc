@@ -10,6 +10,9 @@ export default new Vuex.Store({
     groupAdminVisable: false,
     groupAddVisable: false,
     groupName: '',
+    userInfo: {
+      userId:"", name: "",mail: "",info: "",avatar: "", favor:[], recent:[]
+    },
     roles: localStorage.getItem('roles') == null ? '' : localStorage.getItem('roles'),
     token: localStorage.getItem('token') == null ? '' : localStorage.getItem('token'),
     name: localStorage.getItem('name') == null ? '' : localStorage.getItem('name')
@@ -38,6 +41,9 @@ export default new Vuex.Store({
     setLayout(state,isTile){
       this.state.layout = isTile
     },
+    setUserInfo(state,user){
+      this.state.userInfo = user
+    },
     setGroupName(state,name){
       this.state.groupName = name
     },
@@ -52,6 +58,9 @@ export default new Vuex.Store({
     getLayout(state){
       return this.state.layout
     },
+    getUserInfo(state){
+      return this.state.userInfo
+    },
     getGroupName(state){
       return this.state.groupName
     },
@@ -65,6 +74,9 @@ export default new Vuex.Store({
   actions:{
     setLayoutStatus({commit,state},isTile){
       commit('setLayout',isTile)
+    },
+    setUserInfo({commit,state},user){
+      commit('setUserInfo',user)
     },
     setCurGroupName({commit,state},name){
       commit('setGroupName',name)

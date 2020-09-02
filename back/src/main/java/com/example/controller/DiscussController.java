@@ -1,25 +1,35 @@
 package com.example.controller;
 
+import com.example.dao.DocDao;
+import com.example.dao.UserDao;
+import com.example.entity.Doc;
+import com.example.entity.User;
+import com.example.utils.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.entity.Discuss;
 import com.example.entity.Result;
-import com.example.service.DiscussService;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/discuss")
 public class DiscussController {
-
 	@Autowired
-	DiscussService discussService;
+	UserDao userDao;
+	@Autowired
+	DocDao docDao;
+	@Autowired
+	JwtTokenUtil jwtTokenUtil;
+	@Autowired
+	private HttpServletRequest request;
 
-	@PostMapping("/send/{fileId}")
-	Result newDiscuss(@PathVariable Integer fileId, String discussBody) {
+	@PostMapping("/send/{docId}")
+	Result newDiscuss(@PathVariable String docId, String discussBody) {
 		try {
-//			System.out.println("fileId = " + fileId);
-//			System.out.println("discussBody = " + discussBody);
-			discussService.newDiscuss(fileId, discussBody);
+			User user = userDao.getUserByName(jwtTokenUtil.getUsernameFromRequest(request));
+			docDao.saveDiscuss(user,docId,discussBody);
 			return Result.create(200, "评论成功");
 		}
 		catch (Exception e) {
@@ -30,7 +40,7 @@ public class DiscussController {
 	@DeleteMapping("/delete/{discussId}")
 	Result deleteDiscuss(@PathVariable Integer discussId) {
 		try {
-			discussService.deleteDiscussById(discussId);
+//			docDao.deleteDiscuss(discussId);
 			return Result.create(200, "删除成功");
 		}
 		catch (Exception e) {
@@ -41,7 +51,6 @@ public class DiscussController {
 	@PostMapping("/read/{discussId}")
 	Result readDiscuss(@PathVariable Integer discussId) {
 		try {
-			discussService.readDiscussById(discussId);
 			return Result.create(200, "已读成功");
 		}
 		catch (Exception e) {
@@ -51,14 +60,13 @@ public class DiscussController {
 
 	@GetMapping("/getByDocId/{fileId}")
 	Result getDiscussByDocId(@PathVariable String fileId) {
-		return Result.create(200, "查询成功", discussService.getDiscussByFileId(Integer.valueOf(fileId)));
+		return Result.create(200, "查询成功", null);
 	}
 
 	@GetMapping("/getById")
 	Result getDiscussById(Integer discussId) {
 		try {
-			Discuss dis = discussService.getDiscussById(discussId);
-			return Result.create(200, "查询成功", dis);
+			return Result.create(200, "查询成功", null);
 		}
 		catch (Exception e) {
 			return Result.create(200, "查询失败," + e.getMessage());
@@ -68,7 +76,7 @@ public class DiscussController {
 	@GetMapping("/getAllDiscuss")
 	Result getAllDiscuss(){
 		try {
-			return Result.create(200, "查询成功", discussService.getAllDiscuss());
+			return Result.create(200, "查询成功", null);
 		}
 		catch (Exception e) {
 			return Result.create(200, "查询失败," + e.getMessage());

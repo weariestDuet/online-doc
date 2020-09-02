@@ -1,32 +1,21 @@
 <template>
   <el-container>
-      <el-header>
+      <el-header v-if="editBody==null">
         <div class="input-group">
           <label>
-            <input v-model="title" placeholder="请输入标题" v-if="flag" style="width:60%"></input>&nbsp;
+            <input v-model="title" placeholder="请输入标题" style="width:60%"></input>&nbsp;
           </label>
         </div>
-        <!--        <el-input v-model="title" placeholder="请输入标题" v-if="flag" style="width:60%"></el-input>-->
-        <div class="hd" v-if="!flag">{{this.title}}</div>
       </el-header>
 
       <el-main style="width: 80%">
-        <div class="ql-snow">
-          <div class="ql-editor" v-if="!flag" v-html="this.content">{{this.content}}</div>
-        </div>
         <quill-editor
         v-model="content" style="height: 60vh"
         ref="myQuillEditor"
         :options="editorOption"
-        @blur="onEditorBlur($event)"
-        @focus="onEditorFocus($event)"
-        @ready="onEditorReady($event)"
-        v-if="flag"
       ></quill-editor>
       </el-main>
       <el-footer>
-        <el-button @click="startEdit" v-if="!flag">编辑</el-button>
-        <el-button @click="endEdit" v-if="flag">预览</el-button>
         <el-button @click="saveFile">保存</el-button>
       </el-footer>
   </el-container>
@@ -38,7 +27,9 @@
   import 'quill/dist/quill.snow.css'
   import 'quill/dist/quill.bubble.css'
 
-  //引入组件，可以直接使用这个组件
+  import user from '@/api/user'
+  import template from '@/api/template'
+
   import { quillEditor } from 'vue-quill-editor'
   import { addQuillTitle } from '../quill-title.js'
   import Quill from 'quill' //引入编辑器
@@ -51,12 +42,11 @@
   export default {
     name: "Edit",
     components:{ quillEditor },
-    props: {title: String, content: String},
+    props: {editBody : String},
     data() {
       return {
-        // title: '',
-        flag:true,
-        // content:null,
+        title: '',
+        content:null,
         editorOption:{
             theme:'snow',
             modules:{
@@ -83,49 +73,48 @@
           },
       }
     },
-    created(){
-
-    },
      mounted() {
       addQuillTitle();
-    },
-    destroyed(){
-      this.endEdit();
+      if(this.editBody!=null) this.content = this.editBody
+      if(this.$route.params.type.length<4){
+        this.loadTemplate()
+      }
     },
     methods:{
+      loadTemplate(){
+        template.getTemplate(this.$route.params.type).then(res=>{
+          this.title = res.data.title
+          this.content = res.data.body
+        })
+      },
+      getUserInfo() {
+        if (this.$store.state.token) {
+          user.getUserInfo().then((res) => {
+            this.$store.dispatch('setUserInfo',res.data)
+          });
+        }
+      },
       saveFile(){
+        console.info(this.title)
         if(this.title=='') this.$notify({title: '提示',type: 'warning',message: '请填写标题',duration: 2500 })
         else if(this.content==null || this.content=='') 
         this.$notify({title: '提示',type: 'warning',message: '请输入文档内容',duration: 2500 })
         else{
-          file.sendDocument(this.title,this.content)
-          .then(res=>{
-            this.$notify({title: '提示',type: 'success',message: res.message,duration: 1000 });
-            this.$router.push({path:'/'})
-          })
+          if(this.$route.params.type == 'User'){
+            file.saveUserDoc(this.title,this.content)
+            .then(res=>{
+              this.getUserInfo()
+              this.$notify({title: '提示',type: 'success',message: res.message,duration: 1000 });
+              this.$router.push({path:'/'})
+            })
+          }else{
+            file.saveTeamDoc(this.title,this.content,this.$store.state.groupName)
+            .then(res=>{
+              this.$notify({title: '提示',type: 'success',message: res.message,duration: 1500 });
+              this.$router.push({path:'/TeamSpace'})
+            })
+          }
         }
-      },
-      startEdit(){
-        this.flag=true;
-      },
-      endEdit(){
-        this.flag=false;
-      },
-      onEditorReady (editor) {
-        // 准备编辑器
-        // console.log('111')
-      },
-      onEditorBlur () {
-        // 失去焦点事件
-        console.log('111')
-      },
-      onEditorFocus (event) {
-        // 获得焦点事件
-        // event.enable(this.flag);
-      },
-      onEditorChange () {
-        // 内容改变事件
-        console.log('333')
       }
     }
   }

@@ -3,9 +3,9 @@
     <!-- 平铺视图 -->
       <div class="item" v-for="(o, index) in templateData" :key="index">
         <div class="core" @mouseenter="pEnter(index)" @mouseleave="pLeave(index)">
-          <img :src="o.cover" @click="gotoTemplete(o.id)">
+          <img :src="o.cover" @click="gotoTemplete(o.templateId)">
           <div style="margin-top: 14px; text-align: center">
-            <a>{{o.name}}</a>
+            <a>{{o.title}}</a>
           </div>
         </div>
     </div>
@@ -32,11 +32,12 @@
       pLeave(index) {},
       getTemplateList(){
         template.getTemplateList().then((res)=>{
+          // console.log(res.data)
           this.templateData=res.data
         })
       },
       gotoTemplete(id){
-        this.$router.push({path: '/Template/'+id})
+        this.$router.push({path: '/Edit/'+id})
       }
     }
   }

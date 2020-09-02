@@ -2,11 +2,11 @@
   <div class="workStation">
     <!-- 左侧文档视图 -->
     <div style="flex:1">   
-      <el-tabs v-model="activeName" style="height:100%"  @tab-click="handleClick" type="card">
-        <el-tab-pane :label="o.groupName" :name="o.groupName" v-for="(o,id) in groups" :key="id">
+      <el-tabs v-model="activeTeam" style="height:100%"  @tab-click="handleClick" type="card">
+        <el-tab-pane :label="o.name" :name="o.name" v-for="(o,id) in groups" :key="id">
           <h2 style="text-indent:1.5em;user-select:none;">团队文件</h2>
           <el-divider></el-divider>
-          <file-list :groupName="activeName" type="group" :FileData="FileData"/>
+          <file-list type="team" :FileList="FileData" @refresh="getGroups" />
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -105,44 +105,24 @@
   import group from '@/api/group'
   import file from '@/api/file'
   import Edit from '@/views/Edit'
-  import collapse from "../assets/collapse.js";
   export default {
     name:"TeamSpace",
-    components: { FileList, MyTeam, Edit,collapse},
+    components: { FileList, MyTeam, Edit},
     data() {
       return {
         FileData: [],
-        isActive: true,//默认不隐藏
         user_keyword: '', //添加协作者用户名
         group_keyword: '', //申请加入/创建团队名
         optionVisible: false,
         attendVisible: false,
-        activeName: '',
+        activeTeam: '',
         //当前标签页团队属性
-        adminName: '',
-        adminMail: '',
-        adminAvatar: '',
         isAdmin: false,
         groups: [],
-        group:{
-          id: 0,
-          admin: [],
-          member: []
-        }
+        group:{}
       };
     },
     created(){
-      if(localStorage.getItem('name')==''||localStorage.getItem('name')==undefined){
-        this.$confirm('您还未登陆/或者登陆已过期', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.$router.push({path: '/Login'})
-        }).catch(() => {
-          // this.$router.push({path: '/Login'})
-        });
-      }
       this.getGroups()
     },
     methods: {
@@ -150,42 +130,32 @@
         this.$router.push({path:'/TemplateLibrary'})
       },
       validAvatar(avatar){
-        // console.log(this.adminAvatar)
         if(avatar == null || avatar == undefined) return false
         return avatar.length>0?true:false
       },
-      getGroupFile() {
-        file.getGroupFile(this.activeName).then(res=>{
-          this.FileData = res.data
-          console.log(res.message)
-          console.log(res.data)
-        })
-      },
-      getGroupMem(groupName){
-        group.getGroupMem(groupName).then(res=>{
-          console.info('团队成员')
-          console.log(res.data)
-          this.group = res.data
-          if(this.group.admin.length>0){
-            this.adminName = this.group.admin[0].name
-            this.adminMail = this.group.admin[0].mail
-            this.adminAvatar = this.group.admin[0].avatar
-            if(this.group.admin[0].name==this.$store.state.name) this.isAdmin = true
+      changeTeam(){
+        for(let i=0; i<this.groups.length;++i){
+          if(this.groups[i].name == this.activeTeam){
+            var admin = []
+            admin.push(this.groups[i].admin)
+            var team = {groupId:this.groups[i].groupId, admin :admin, name: this.groups[i].name, member:this.groups[i].member, creation:this.groups[i].creation}
+            this.group = team
+            this.FileData = this.groups[i].creation
+            // console.info(this.group)
+            if(admin[0].name==this.$store.state.name) this.isAdmin = true
             else this.isAdmin = false
           }
-        })
+        }
       },
       getGroups(){
         group.getGroups().then(res=>{
           console.log(res.data)
           this.groups = res.data
           if(this.groups.length>0) {
-            this.$store.dispatch('setCurGroupName',this.groups[0].groupName)
-          this.activeName = this.groups[0].groupName
+            this.$store.dispatch('setCurGroupName',this.groups[0].name)
+            this.activeTeam = this.groups[0].name
+            this.changeTeam()
           }
-          if(this.groups.length>0)
-            this.getGroupMem(this.$store.state.groupName)
-            this.getGroupFile()
         })
       },
       attendGroup(){
@@ -211,8 +181,9 @@
             this.group_keyword=''
             this.attendVisible = false
           })
-        }this.$router.go(0)
-        // this.getGroups()
+          this.$router.go(0)
+          this.getGroups()
+        }
       },
       addMem(){
         if(this.user_keyword!=''){
@@ -256,9 +227,7 @@
         this.$store.dispatch('setLayoutStatus',0)
       },
       handleClick(tab, event) {
-        console.info('切换团队成员信息')
-        this.getGroupMem(this.activeName)
-        this.getGroupFile(this.activeName)
+        this.changeTeam()
       },
       handleClose(done) {
         done();

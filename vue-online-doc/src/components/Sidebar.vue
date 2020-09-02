@@ -7,25 +7,21 @@
     </div>
 
     <el-menu :default-active="this.$route.path" :router="true">
-      <el-menu-item index="/Edit">
-        <i class="el-icon-edit-outline"></i>
-        <span class="font" slot="title">新建</span>
-      </el-menu-item>
       <el-menu-item index="/">
         <i class="el-icon-loading"></i>
         <span class="font" slot="title">工作台</span>
       </el-menu-item>
-      <el-menu-item index="/TeamSpace">
-        <i class="el-icon-menu"></i>
-        <span class="font" slot="title">团队空间</span>
+      <el-menu-item @click="Edit">
+        <i class="el-icon-edit-outline"></i>
+        <span class="font" slot="title">创建文档</span>
       </el-menu-item>
       <el-menu-item index="/TemplateLibrary">
         <i class="el-icon-files"></i>
         <span class="font" slot="title">模板库</span>
       </el-menu-item>
-      <el-menu-item index="/Recycle">
-        <i class="el-icon-delete"></i>
-        <span class="font" slot="title">回收站</span>
+      <el-menu-item index="/TeamSpace">
+        <i class="el-icon-menu"></i>
+        <span class="font" slot="title">团队空间</span>
       </el-menu-item>
     </el-menu>
 
@@ -45,6 +41,10 @@ export default {
     isTeamSpace() { return this.$route.path == '/TeamSpace'}
   },
   methods: {
+    Edit() {
+      if(this.$route.path == '/TeamSpace') this.$router.push({path:'/Edit/Team'})
+      else this.$router.push({path:'/Edit/User'})
+    },
     validAvatar() {
       return false
       // if (this.avatar == null || this.avatar == undefined) return false;

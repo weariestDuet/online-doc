@@ -13,7 +13,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -35,10 +34,6 @@ public class UserService implements UserDetailsService {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-    public void saveAvatar(Integer userId, String avatar){
-        User user = userDao.getUserByName(jwtTokenUtil.getUsernameFromRequest(request));
-        userDao.updateAvatar(userId,avatar);
-    }
 
     /**
      * 登录
@@ -50,7 +45,7 @@ public class UserService implements UserDetailsService {
         //登录验证
         User user = userDao.getUserByName(name);
         if (user == null) throw new RuntimeException("用户名错误");
-        if (!user.getPassword().equals(pwd)) throw new RuntimeException("密码错误");
+        if (!user.getPwd().equals(pwd)) throw new RuntimeException("密码错误");
 
         //签发token
         final UserDetails userDetails = this.loadUserByUsername(user.getName());
@@ -80,15 +75,13 @@ public class UserService implements UserDetailsService {
      * @param code 验证码
      */
     public void register(String name, String password, String mail, String code) {
-        if (userDao.getUserByName(name) != null) throw new RuntimeException("用户名已存在");
-        if (!checkMailCode(mail, code)) throw new RuntimeException("验证码错误");
-
         User newUser = new User();
         newUser.setName(name);
-        newUser.setPassword(password);
+        newUser.setPwd(password);
         newUser.setMail(mail);
         userDao.saveUser(newUser);
     }
+
 
     /**
      * 退出登录
@@ -129,30 +122,6 @@ public class UserService implements UserDetailsService {
         rabbitTemplate.convertAndSend("MAIL", map);
     }
 
-    public void updateUserPassword(String oldPassword, String newPassword) {
-        //校验原密码
-        String name = jwtTokenUtil.getUsernameFromRequest(request);
-        User user = new User();
-        user.setName(name);
-        user = userDao.getUserByName(user.getName());
-//        if (!encoder.matches(oldPassword, user.getPassword()))
-        if(!oldPassword.equals(user.getPassword()))
-            throw new RuntimeException("密码错误");
-//        user.setPassword(encoder.encode(newPassword));
-        user.setPassword(newPassword);
-        userDao.updateUser(user);
-
-    }
-    public void updateUserMail(String newMail, String newMailCode) {
-        //获取向旧邮箱发出的验证码
-        String userName = jwtTokenUtil.getUsernameFromRequest(request);
-        User user = userDao.getUserByName(userName);
-        //校验新邮箱验证码
-        if (!checkMailCode(newMail,newMailCode))
-            throw new RuntimeException("新邮箱无效验证码");
-        user.setMail(newMail);
-        userDao.updateUser(user);
-    }
 
     /**
      * 通过用户名加载用户到 Spring Security
@@ -167,24 +136,6 @@ public class UserService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(user.getName(), "***********", authorities);
     }
 
-    public User getUserInfo(){
-        return userDao.getUserByName(jwtTokenUtil.getUsernameFromRequest(request));
-    }
-    public User getOtherInfo(String userName) {
-        return userDao.getUserByName(userName);
-    }
-    /**
-     * 更新用户信息
-     */
-    public void updateUserInfo(String gender, String birth, String job, String summary) {
-        User user = userDao.getUserByName(jwtTokenUtil.getUsernameFromRequest(request));
-        if(gender!=null) user.setGender(gender);
-        if(birth!=null) user.setBirth(birth);
-        if(job!=null) user.setJob(job);
-        if(summary!=null) user.setInfo(summary);
-        System.out.println("user.toString() = " + user.toString());
-        userDao.updateUser(user);
-    }
 
     /**
      * 从token中提取用户信息

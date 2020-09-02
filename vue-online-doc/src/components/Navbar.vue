@@ -13,8 +13,10 @@
     </span>
 
     <span @click="handleCommand_notice">
-      <img v-if="unreadCnt" src="../../static/bell2.png" alt slot="reference" />
-      <img v-else src="../../static/notification.png" alt slot="reference" />
+      <el-badge v-if="unreadCnt" :value="unreadCnt">
+        <i class="el-icon-bell notify"></i>
+      </el-badge>
+      <i v-else class="el-icon-bell notify"></i>
     </span>
 
     <span>
@@ -44,40 +46,8 @@
       style="margin-top:60px;"
     >
       <el-tabs v-model="activeName_notice" type="border-card" style="padding:5px">
-        <el-tab-pane label="文档评论" name="0">
-          <div class="comment">
-            <el-scrollbar>
-              <el-timeline>
-                <el-timeline-item
-                  v-for="comment in commentList"
-                  :key="comment.discuss.discussId"
-                  placement="top"
-                  :timestamp="dateFormat(comment.discuss.discussTime)"
-                >
-                  <div class="commentList">
-                    <span style="float:left">
-                      <img class="doc" src="../../static/doc.png" />
-                    </span>
-                    <span>
-                      <div style="margin-bottom:5px">
-                        <a @click="gotoUserPage(comment.user.name)">{{comment.user.name}}</a>&nbsp;&nbsp;评论了
-                        <b>「 {{comment.fileName}}」</b>
-                      </div>
-                      <div>{{comment.discuss.discussBody}}</div>
-                    </span>
-                  </div>
-                </el-timeline-item>
-                <el-timeline-item v-if="commentList.length == 0" placement="top">
-                  <el-card>
-                    <span>空空如也~</span>
-                  </el-card>
-                </el-timeline-item>
-              </el-timeline>
-            </el-scrollbar>
-          </div>
-        </el-tab-pane>
         <el-tab-pane label="系统通知" name="2">
-          <div class="comment">
+          <div class="message">
             <el-scrollbar>
               <el-timeline>
                 <el-timeline-item
@@ -86,21 +56,21 @@
                   placement="top"
                   :timestamp="dateFormat(notice.time)"
                 >
-                  <div class="commentList">
+                  <div class="messageList">
                     <span style="float:left">
                       <img class="doc" src="../../static/doc.png" />
                     </span>
                     <span>
                       <div style="margin-bottom:10px">
-                        <a @click="gotoUserPage(notice.userName)">{{notice.userName}}</a>
-                        &nbsp;&nbsp;{{notice.info}}
-                        <b>「 {{notice.groupName}}」</b>
+                        <a @click="gotoUserPage(notice.sender)">{{notice.sender}}</a>
+                        &nbsp;&nbsp;{{notice.action}}
+                        <b>「 {{notice.item}}」</b>
                       </div>
-                      <div class="commentButton">
+                      <div class="messageButton">
                         <span style="float:right;margin-right:25px">
                           <el-button
                             size="mini"
-                            v-if="showNoticeButton(notice.isRead,notice.info)"
+                            v-if="notice.isRead == 0"
                             @click="permit(notice.noticeId)"
                           >同意</el-button>
                         </span>
@@ -118,7 +88,7 @@
           </div>
         </el-tab-pane>
         <el-tab-pane :label="unreadTitle" name="1">
-          <div class="comment">
+          <div class="message">
             <el-scrollbar>
               <el-timeline>
                 <el-timeline-item
@@ -127,25 +97,24 @@
                   placement="top"
                   :timestamp="dateFormat(unread.time)"
                 >
-                  <div class="commentList">
+                  <div class="messageList">
                     <span style="float:left">
                       <img class="doc" src="../../static/doc.png" />
                     </span>
                     <span>
                       <div style="margin-bottom:10px">
-                        <a @click="gotoUserPage(unread.user)">{{unread.user}}</a>
+                        <a @click="gotoUserPage(unread.sender)">{{unread.sender}}</a>
                         &nbsp;&nbsp;{{unread.action}}
                         <b>「 {{unread.item}}」</b>
                       </div>
-                      <div class="commentButton">
+                      <div class="messageButton">
                         <span
-                          @click="readComment(unread.uid)"
+                          @click="ignore(unread.uid)"
                           class="el-icon-bell readButton"
                         ></span>
-                        <span v-if="showUnreadButton(unread.info,unread.action)">
-                          <el-button size="mini" @click="permit(unread.uid)">同意</el-button>
+                        <span v-if="unread.isRead == 0">
+                          <el-button size="mini" @click="permit(unread.noticeId)">同意</el-button>
                         </span>
-                        <span style="flex:1"v-else>{{unread.info}}</span>
                       </div>
                     </span>
                   </div>
@@ -199,23 +168,8 @@
                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>
               </el-upload>
             </el-form-item>
-            <el-form-item label="性别" :label-width="labelWidth">
-              <el-radio v-model="userInfo.gender" label="男" border size="medium">男</el-radio>
-              <el-radio v-model="userInfo.gender" label="女" border size="medium">女</el-radio>
-            </el-form-item>
-            <el-form-item label="生日" :label-width="labelWidth">
-              <el-date-picker
-                v-model="userInfo.birth"
-                value-format="yyyy-MM-dd"
-                type="date"
-                placeholder="选择日期"
-              ></el-date-picker>
-            </el-form-item>
-            <el-form-item label="邮箱" :label-width="labelWidth" prop="email">
-              <div style="width: 100%">{{userInfo.email}}</div>
-            </el-form-item>
-            <el-form-item label="职业" :label-width="labelWidth">
-              <el-input v-model="userInfo.job" style="width: 100%"></el-input>
+            <el-form-item label="邮箱" :label-width="labelWidth" prop="mail">
+              <div style="width: 100%">{{userInfo.mail}}</div>
             </el-form-item>
             <el-form-item label="简介" :label-width="labelWidth">
               <el-input
@@ -223,7 +177,7 @@
                 :autosize="{ minRows: 5, maxRows: 10}"
                 placeholder="请输入内容"
                 style="width: 100%"
-                v-model="userInfo.summary"
+                v-model="userInfo.info"
               ></el-input>
             </el-form-item>
 
@@ -288,30 +242,18 @@ export default {
   name: "Navbar",
   data() {
     return {
+      userInfo: {},
       search: '',
-      isFullscreen: false, //全屏的状态
       name: "未登录",
       avatar: "",
-      total: 0, //总评论数量
       unreadCnt: 0,
+      noticeList: [], //系统通知
+      unreadList: [],
+      notice_drawer: false,
+      info_drawer: false,
       activeNames: ["1", "2"], //激活的折叠面板
       activeName_info: "0", //默认标签
       activeName_notice: "1",
-      noticeList: [], //系统通知
-      unread: { user: "", action: "", item: "", info: "", time: "" },
-      unreadList: [],
-      commentList: [], //用户评论
-      userInfo: {
-        name: "",
-        gender: "",
-        birth: "",
-        email: "",
-        job: "",
-        summary: "",
-        avatar: "",
-      },
-      notice_drawer: false,
-      info_drawer: false,
       file: {}, //头像图片
       oldPassword: "",
       newPassword: "",
@@ -344,15 +286,21 @@ export default {
     click_search(){
       alert('搜索'+this.search)
     },
-    screen() {
-      //设置全屏操作
-      // 如果不允许进入全屏，发出不允许提示
-      if (!screenfull.enabled) {
-        this.$message("无法全屏");
-        return false;
-      }
-      screenfull.toggle();
+    getMessage() {
+      this.unreadCnt = 0;
+      this.unreadList = [];
+      message.getNotice().then((res) => {
+        this.noticeList = res.data;
+        this.total = res.data.length;
+        for (var i = 0; i < this.total; i++) {
+          if(res.data[i].isRead == 0){
+            this.unreadList.push(res.data[i]);
+            this.unreadCnt++;
+          }
+        }
+      });
     },
+    
     permit(id) {
       console.log("同意");
       message.permit(id).then((res) => {
@@ -366,82 +314,15 @@ export default {
         this.getMessage();
       });
     },
-    getMessage() {
-      console.info("getMessage");
-      this.unreadCnt = 0;
-      this.unreadList = [];
-      message.getAllDiscuss().then((res) => {
-        // console.log(res.data)
-        this.commentList = res.data;
-        this.total = res.data.length;
-        for (var i = 0; i < this.total; i++) {
-          if (this.commentList[i].discuss.isRead == 0) {
-            let u = {
-              uid: -res.data[i].discuss.discussId,
-              user: res.data[i].user.name,
-              action: "评论了",
-              item: res.data[i].fileName,
-              info: res.data[i].discuss.discussBody,
-              time: res.data[i].discuss.discussTime,
-            };
-            this.unreadList.push(u);
-            this.unreadCnt++;
-          }
-        }
+    ignore(id) {
+      message.readNotice(id).then((res) => {
+        console.log(res.message);
+        this.getMessage();
       });
-      message.getNotice().then((res) => {
-        // console.log(res.data)
-        this.noticeList = res.data;
-        this.total = res.data.length;
-        for (var i = 0; i < this.total; i++) {
-          if (this.noticeList[i].userName == this.$store.state.name)
-            this.noticeList[i].userName = res.data[i].groupAdmin;
-          if (this.noticeList[i].isRead == 0) {
-            let u = {
-              uid: res.data[i].noticeId,
-              user: res.data[i].groupAdmin,
-              action: res.data[i].info,
-              item: res.data[i].groupName,
-              time: res.data[i].time,
-              info: "",
-            };
-            if (u.user == this.$store.state.name) u.user = res.data[i].userName;
-            this.unreadList.push(u);
-            this.unreadCnt++;
-          }
-        }
-      });
-      // console.log(this.unreadList)
-    },
-    dateFormat(time) {//将时间戳转化为几分钟前，几小时前
-      return date.timeago(time);
-    },
-    readComment(id) {
-      console.log("read" + id);
-      if (id > 0)
-        message.readNotice(id).then((res) => {
-          console.log(res.message);
-          this.getMessage();
-        });
-      else
-        message.readComment(-id).then((res) => {
-          console.log(res.message);
-          this.getMessage();
-        });
     },
     validAvatar() {
       if (this.avatar == null || this.avatar == undefined) return false;
       return this.avatar.length > 0 ? true : false;
-    },
-    showUnreadButton(discuss, action) {
-      if (discuss != "") return false;
-      if (action.substring(0, 1) == "已") return false;
-      return true;
-    },
-    showNoticeButton(isRead, info) {
-      if (isRead == 1) return false;
-      if (info.substring(0, 1) == "已") return false;
-      return true;
     },
     loginout() {
       user.logout().then((res) => {
@@ -475,23 +356,16 @@ export default {
     getUserInfo() {
       //用户信息
       if (this.$store.state.token) {
-        user.getUserInfo().then((response) => {
-          var a = response.data;
-          this.userInfo.name = a.name;
-          this.userInfo.gender = a.gender;
-          this.userInfo.birth = a.birth;
-          this.userInfo.email = a.mail;
-          this.userInfo.job = a.job;
-          this.userInfo.summary = a.info;
-          this.userInfo.avatar = a.avatar;
-          this.avatar = a.avatar;
+        user.getUserInfo().then((res) => {
+          this.userInfo = res.data
+          this.$store.dispatch('setUserInfo',res.data)
         });
       }
     },
     submitForm() {
       //修改用户信息
       var a = this.userInfo;
-      user.editUser(a.gender, a.birth, a.job, a.summary).then((response) => {
+      user.editUser(a.gender, a.birth, a.job, a.info).then((response) => {
         if (response.code == 200) {
           this.$message({
             type: "success",
@@ -621,6 +495,16 @@ export default {
           console.log(err);
         });
     },
+    dateFormat(time) {//将时间戳转化为几分钟前，几小时前
+      return date.timeago(time);
+    },
+    screen() {
+      if (!screenfull.enabled) {
+        this.$message("无法全屏");
+        return false;
+      }
+      screenfull.toggle();
+    },
   },
 };
 </script>
@@ -634,12 +518,17 @@ img {
   height: 33px;
   vertical-align: middle;
 }
+.notify {
+  color: grey;
+  font-size:33px;
+  margin-top:3px
+}
 .readButton {
   font-size:20px;
   margin-left:20px;
   width:40px
 }
-.commentButton {
+.messageButton {
   display: flex;
   flex-flow: row-reverse nowrap;
   align-items: center;
@@ -680,7 +569,7 @@ img {
   height: 60px;
   margin-right: 10px;
 }
-.comment {
+.message {
   width: 100%;
   height: 90vh;
 }
@@ -690,7 +579,7 @@ img {
 .el-timeline {
   margin-left: -40px;
 }
-.commentList {
+.messageList {
   height: 90px;
   width: 100%;
   margin: 0 auto;

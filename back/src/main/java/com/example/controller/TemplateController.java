@@ -1,7 +1,8 @@
 package com.example.controller;
 
+import com.example.dao.TemplateDao;
 import com.example.entity.Result;
-import com.example.service.TemplateService;
+import com.example.entity.Template;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,13 +11,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/template")
 public class TemplateController {
     @Autowired
-    private TemplateService templateService;
+    TemplateDao templateDao;
+
 
     @GetMapping("/getAll")
     public Result getAll(){
         try {
-            System.out.println("1212121");
-            return Result.create(200, "获取成功",templateService.getAll());
+            return Result.create(200, "获取成功",templateDao.getTemplate());
         }
         catch (Exception e) {
             return Result.create(200, "获取失败" + e.getMessage());
@@ -26,7 +27,8 @@ public class TemplateController {
     @GetMapping("/{id}")
     public Result getById(@PathVariable Integer id){
         try {
-            return Result.create(200, "获取成功",templateService.getById(id));
+            Template template = templateDao.getTemplateById(id);
+            return Result.create(200, "获取成功",template);
         }
         catch (Exception e) {
             return Result.create(200, "获取失败" + e.getMessage());

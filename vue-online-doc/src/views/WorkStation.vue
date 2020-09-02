@@ -3,13 +3,13 @@
     <div style="flex:1">
       <el-tabs v-model="activeName" @tab-click="handleClick">
         <el-tab-pane label="我的创建" name="MyCreation">
-          <my-creation :random="refreshCreation" />
+          <my-creation/>
         </el-tab-pane>
         <el-tab-pane label="我的收藏" name="MyStar">
-          <my-star :random="refreshStar" />
+          <my-star/>
         </el-tab-pane>
         <el-tab-pane label="最近浏览" name="Recent">
-          <recent :random="refreshRecent" />
+          <recent/>
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -35,6 +35,7 @@
 import Recent from "../components/Recent";
 import MyStar from "../components/MyStar";
 import MyCreation from "../components/MyCreation";
+import user from '@/api/user'
 
 export default {
   name: "WorkStation",
@@ -46,11 +47,7 @@ export default {
   data() {
     return {
       isTile: true,
-      isActive: true, //默认不隐藏
       activeName: "MyCreation",
-      refreshCreation: 0,
-      refreshStar: 0,
-      refreshRecent: 0,
     };
   },
   created() {
@@ -72,12 +69,6 @@ export default {
     }
   },
   methods: {
-    newFile() {
-      this.$router.push({ path: "/Edit" });
-    },
-    gotoTLibrary() {
-      this.$router.push({ path: "/TemplateLibrary" });
-    },
     layoutTile() {
       this.$store.dispatch("setLayoutStatus", 1);
     },

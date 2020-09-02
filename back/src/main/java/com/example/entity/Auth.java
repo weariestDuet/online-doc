@@ -1,24 +1,19 @@
 package com.example.entity;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Data
 @ToString
-public class Role {
+public class Auth {
 
-    private Integer id;
-    private Integer fileId;
     private Integer groupWrite;
     private Integer groupDiscuss;
     private Integer otherRead;
     private Integer otherDiscuss;
 
-    public Role() {
-
-    }
-    public Role(Integer fileId) {
-        this.fileId = fileId;
+    public Auth() {
         this.groupWrite = 1;
         this.groupDiscuss = 1;
         this.otherRead = 1;

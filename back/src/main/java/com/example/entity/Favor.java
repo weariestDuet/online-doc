@@ -10,15 +10,12 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class Favor {
-	private Integer favorId;
-	private Integer userId;
-	private Integer fileId;
-	private Date favorTime;
-	
-	public Favor(Integer userId, Integer fileId, Date favorTime) {
-		this.userId = userId;
-		this.fileId = fileId;
-		this.favorTime = favorTime;
+	private String favorId;
+	private String docId;
+	private String title;
+
+	public Favor(String docId, String title) {
+		this.docId = docId;
+		this.title = title;
 	}
-	
 }

@@ -14,7 +14,7 @@
     <!-- 平铺视图 -->
     <div  v-if="layout&&FileData.length>0" class="tile" >
       <div class="item" v-for="(o, fileId) in FileData" :key="fileId">
-          <div class="core" @mouseenter="pEnter(o.fileId)" @mouseleave="pLeave(o.fileId)">
+          <div class="core" @mouseenter="pEnter(o.docId)" @mouseleave="pLeave(o.docId)">
             <div style="height:20px" >
               <el-dropdown @command="handleCommand">
                 <div style="width:100px">
@@ -22,18 +22,16 @@
                 </div>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item command="open">新标签页打开</el-dropdown-item>
-                  <el-dropdown-item v-if="!isRecycle&&!isStar" command="collect" divided>收藏</el-dropdown-item>
-                  <el-dropdown-item v-if="isStar" command="collect" divided>取消收藏</el-dropdown-item>
-                  <el-dropdown-item v-if="!isRecycle" command="share">分享</el-dropdown-item>
-                  <el-dropdown-item v-if="isCreation" command="remove">删除</el-dropdown-item>
-                  <el-dropdown-item v-if="isRecycle" command="recover">恢复</el-dropdown-item>
-                  <el-dropdown-item v-if="isRecycle" command="delete">彻底删除</el-dropdown-item>
+                  <el-dropdown-item v-if="!isStar" command="collect" divided>收藏</el-dropdown-item>
+                  <el-dropdown-item v-if="isStar" command="uncollect" divided>取消收藏</el-dropdown-item>
+                  <el-dropdown-item command="share">分享</el-dropdown-item>
+                  <el-dropdown-item command="delete">删除</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
-            <img src="../../static/doc.png" @click="goto(o.fileId)">
+            <img src="../../static/doc.png" @click="goto(o.docId)">
             <div class="fileName">
-              <a href="#">{{o.fileName}}</a>
+              <a href="#">{{o.title}}</a>
             </div>
           </div>
       </div>
@@ -42,9 +40,9 @@
     <!-- 表格视图 -->
     <div v-if="!layout&&FileData.length>0" class="tile" style="margin-top: 20px">
       <el-table :data="FileData" :cell-style="{padding:'1px'}">
-        <el-table-column prop="fileName" min-width="55%">
+        <el-table-column prop="title" min-width="55%">
           <template slot-scope="scope">
-            <h3 class="fileItem">{{scope.row.fileName}}</h3>
+            <h3 class="fileItem">{{scope.row.title}}</h3>
           </template>
         </el-table-column>
         <el-table-column prop="modifyTime"  label="最后修改时间" min-width="25%">
@@ -55,17 +53,13 @@
         <el-table-column label="操作" min-width="20%">
             <template slot-scope="scope">
                 <el-button size="mini"
-                    @click="goto(scope.row.fileId)">查看</el-button>
-                <el-button size="mini" type="primary" v-if="!isRecycle&&!isStar"
-                    @click="collectFile(scope.row.fileId)">收藏</el-button>
+                    @click="goto(scope.row.docId)">查看</el-button>
+                <el-button size="mini" type="primary" v-if="!isStar"
+                    @click="collectFile(scope.row.docId)">收藏</el-button>
                 <el-button size="mini" type="primary" v-if="isStar"
-                    @click="collectFile(scope.row.fileId)">取消收藏</el-button>
+                    @click="uncollectFile(scope.row.docId)">取消收藏</el-button>
                 <el-button size="mini" type="danger" v-if="isCreation"
-                    @click="removeFile(scope.row.fileId)">删除</el-button>
-                <el-button size="mini" type="primary" v-if="isRecycle"
-                    @click="recoverFile(scope.row.fileId)">恢复</el-button>
-                <el-button size="mini" type="danger" v-if="isRecycle"
-                    @click="deleteFile(scope.row.fileId)">彻底删除</el-button>
+                    @click="deleteFile(scope.row.docId)">删除</el-button>
             </template>
           </el-table-column>
       </el-table>
@@ -74,10 +68,13 @@
 </template>
 
 <script>
+import user from '@/api/user'
+import group from '@/api/group'
 import date from '../utils/date.js'
   import file from '@/api/file'
   export default {
     name: "team-file",
+    props: { userInfo: Object },
     data(){
       return{
         url: '',
@@ -87,90 +84,63 @@ import date from '../utils/date.js'
     },
     props:{ 
       type: String,
-      groupName: String, 
-      FileData: Array, 
+      FileList: Array
       },
     computed:{
-      isRecycle() {
-        return this.type == "recycle"
+      FileData() {
+        if(this.type == 'team') return this.FileList == null ? [] : this.FileList
+        if(this.type == 'creation') return this.$store.state.userInfo.creation == null ? [] : this.$store.state.userInfo.creation
+        if(this.type == 'star') return this.$store.state.userInfo.favor == null ? [] : this.$store.state.userInfo.favor
+        if(this.type == 'recent') return this.$store.state.userInfo.recent == null ? [] : this.$store.state.userInfo.recent
       },
-      isStar() {
-        return this.type == "star"
-      },
-      isCreation() {
-        return this.type == "creation"
-      },
-      layout() {
-        return this.$store.state.layout==1
-      }
-    },
-    watch: {
-      groupName(val) {
-        // console.log(val)
-        this.$store.dispatch('setCurGroupName',val)
-        console.log(this.$store.state.groupName)
-        // this.getFile()
-      }
-    },
-    created() {
-      if(this.$store.state.groupName!=''){
-        // this.getFile()
-      }
+      isStar() { return this.type == "star" },
+      isCreation() { return this.type == "creation"},
+      layout() {return this.$store.state.layout==1}
     },
     methods:{
-      dateFormat(time) {
-        return date.timeago(time)
-      },
-      pEnter(index) {
-        this.index = index
-      },
-      pLeave(index) {},
       handleCommand(command) {
         if(command == 'open') {
           let routeUrl = this.$router.resolve({path: '/File/'+this.index});
           window.open(routeUrl.href, '_blank') }
         else if(command == 'collect') {this.collectFile(this.index)}
+        else if(command == 'uncollect') {this.uncollectFile(this.index)}
         else if(command == 'share') {
           this.url = 'http://39.107.228.168/#/File/'+this.index
           this.dialogVisible = true
         }
-        else if(command == 'remove') {this.deleteFile(this.index)}
-        else if(command == 'recover') {this.recoverFile(this.index)}
         else if(command == 'delete') {this.deleteFile(this.index)}
       },
-      recoverFile(id) {
-        file.recoverDeleted(id).then(res => {
-          this.$notify({title: '提示', type: 'success', message: res.message, duration: 1700});
-          file.getDeleted().then((res) => {
-            this.FileData = res.data
-          })
-        })
+      getUserInfo() {
+        if (this.$store.state.token) {
+          user.getUserInfo().then((res) => {
+            this.$store.dispatch('setUserInfo',res.data)
+          });
+        }
       },
       deleteFile(id) {
-        this.$confirm('确认删除？')
-          .then(_ => {
-            file.foreverDeleted(id).then(res => {
-              this.$notify({title: '提示', type: 'success', message: res.message, duration: 1700});
-              file.getDeleted().then((res) => {
-                this.FileData = res.data
-              })
-            })
-            done();
+        this.$confirm('确认删除？').then(_ => {
+          file.deleteDoc(id).then(res => {
+            this.$notify({title: '提示', type: 'success', message: res.message, duration: 1700});
+            this.getUserInfo()
+            this.$emit('refresh')
           })
-          .catch(_ => {});
-      },
-      removeFile(id){
-        console.info('delete file: id='+id)
-        file.Deleted(id).then(res=>{
-          this.$notify({title: '提示',type: 'success',message: res.message,duration: 1700 });
-          file.getFileList().then((res)=>{this.FileData=res.data})
-        })
+          done();
+        }).catch(_ => {});
       },
       collectFile(id){
-        file.collectDocument(id).then(res=>{
+        file.collectDoc(id).then(res=>{
+          this.getUserInfo()
           this.$notify({title: '提示',type: 'success',message: res.message,duration: 1000 });
         })
       },
+      uncollectFile(id){
+        file.uncollectDoc(id).then(res=>{
+          this.getUserInfo()
+          this.$notify({title: '提示',type: 'success',message: res.message,duration: 1000 });
+        })
+      },
+
+
       goto(id){
         this.$router.push({path: '/File/'+id})
       },
@@ -183,6 +153,13 @@ import date from '../utils/date.js'
       onError(){
         this.$message.error('复制失败');
       },
+      dateFormat(time) {
+        return date.timeago(time)
+      },
+      pEnter(index) {
+        this.index = index
+      },
+      pLeave(index) {},
     }
   }
 </script>

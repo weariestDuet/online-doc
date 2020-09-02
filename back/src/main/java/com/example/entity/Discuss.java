@@ -11,18 +11,18 @@ import lombok.ToString;
 @ToString
 public class Discuss {
 	private Integer discussId;
-	private Integer userId;
-	private Integer fileId;
-	private String discussBody;
-	private Date discussTime;
+	private String content;
+	private Date time;
+	private String name;
+	private String avatar;
 	private Integer isRead;
 
-	public Discuss(Integer userId, Integer fileId, String discussBody, Date discussTime,Integer isRead) {
-		this.userId = userId;
-		this.fileId = fileId;
-		this.discussBody = discussBody;
-		this.discussTime = discussTime;
+	public Discuss(Integer discussId, String content, Date time, String name, String avatar, Integer isRead) {
+		this.discussId = discussId;
+		this.content = content;
+		this.time = time;
+		this.name = name;
+		this.avatar = avatar;
 		this.isRead = isRead;
 	}
-
 }
