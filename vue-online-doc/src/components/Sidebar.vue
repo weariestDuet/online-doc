@@ -27,7 +27,7 @@
 
     <div class="button" v-if="isTeamSpace">
       <el-divider></el-divider>
-      <h4 class="groupInfo"><img src="../../static/team.jpg"></img><a>{{$store.state.groupName}}</a></h4>
+      <h4 class="groupInfo"><img src="../../static/team.jpg"><a>{{$store.state.groupName}}</a></h4>
       <el-button type="primary" plain @click="showGroupAdmin">管 理 团 队</el-button>
       <el-button type="primary" plain @click="showGroupAdd">加 入 团 队</el-button>
     </div>
